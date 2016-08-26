@@ -1,6 +1,8 @@
 # dagyr_tornado_proxy
 A simple tornado proxy which wraps dagyr DAGs
 
+Disclaimer: this is still a prototype, its very likely things won't quite work :)
+
 ## High-Level Operation
 The DAG execution is allowed to modify the request/response in hooks
 (ingress, egress, etc.) which will then be used by the proxy.
