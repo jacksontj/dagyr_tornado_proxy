@@ -1,0 +1,166 @@
+# which DAG to execute for each "hook" and what global_option_data namespace to use
+hook_dag_map:
+  ingress:
+    dag_name: ingress
+    global_option_data_key: ingress
+
+  egress:
+    dag_name: egress
+
+# map of namespace -> option_data
+# these are attached to hooks in the `hook_dag_map` and passed to a DAG
+# during execution
+global_option_data:
+  ingress:
+    # TODO: better example.. this is a bit of a stretch
+    response_codes:
+      success: 200
+      notfound: 404
+
+# what types of processing_nodes -- effectively a template
+processing_node_types:
+  1:
+    name: 'attribute_match'
+    info: 'match an attribute against a set of values'
+    info_url: http://someplace.com
+    # this node_type has the effect of setting a "domain DAG name"
+    func: attribute_match
+    # this is what the args are, and potentially how to resolve them (look it up)
+    arg_spec:
+      # this is a thing that will be passed a key to lookup the value
+      attribute:
+        name: 'a readable name'
+        info: 'name of the attribute to match'
+        type: string
+      # this just gets a value-- just use it
+      values:
+        name: 'a readable name'
+        info: 'list of values to match against'
+        type: list  # TODO: define type of values?
+  2:
+    name: 'execute_dynamic_dag'
+    info: 'execute another dag'
+    func: execute_dynamic_dag
+    arg_spec:
+      # this is a thing that will be passed a key to lookup the value
+      dag_prefix:
+        name: 'a readable name'
+        info: 'string prefix'
+        type: string
+      # this just gets a value-- just use it
+      suffix_key:
+        name: 'a readable name'
+        info: 'list of values to match against'
+        type: string
+  3:
+    name: 'set_attribute'
+    info: 'set an attribute'
+    func: set_attribute
+    arg_spec:
+      # this is a thing that will be passed a key to lookup the value
+      attribute:
+        name: 'a readable name'
+        info: 'name of the attribute to match'
+        type: string
+      # this just gets a value-- just use it
+      value:
+        name: 'what to set it to'
+        info: 'what value to set'
+        # TODO: any??
+        #type: string
+  4:
+    name: 'set_status_code'
+    info: 'set status code'
+    func: set_attribute
+    arg_spec:
+      # this is a thing that will be passed a key to lookup the value
+      attribute:
+        name: 'a readable name'
+        info: 'name of the attribute to match'
+        type: string
+      # this just gets a value-- just use it
+      value:
+        name: 'what to set it to'
+        info: 'what value to set'
+        type: int
+        # key for all possible options, NOT a place to get the values from
+        # for the node instance-- they live in the node instance as "args".
+        # this means that the value you are passed will be a key to lookup in options
+        global_option_data_key: response_codes
+
+# TODO: add options for max_depth, etc. for DAG validation and execution
+# all the DAGs
+dags:
+  ingress:
+    starting_node: 1
+    # THIS is not layered
+    processing_nodes:
+      1: # node instance
+        type_id: 1
+        args:
+          attribute: 'state.pristine_request.headers.Host'
+          # list of the domains to match against
+          values:
+            - a.com
+            - b.com
+            - localhost:8888
+        outlets:
+          true: 2
+          false: 3
+      2: # node instance
+        type_id: 2
+        args:
+          dag_prefix: dynamic_domain
+          suffix_key: 'state.pristine_request.headers.Host'
+      3:
+        type_id: 3
+        args:
+          attribute: state.response.body
+          value: "not found!"
+        outlets:
+          true: 4
+      4:
+        type_id: 4
+        args:
+          attribute: state.response.code
+          value: notfound
+  egress:
+    starting_node: 1
+    processing_nodes:
+      1: # node instance
+        type_id: 3
+        args:
+          attribute: 'state.response.headers.foo'
+          value: 'bar'
+
+  # per domain
+  dynamic_domain_localhost:8888:
+    starting_node: 1
+    processing_nodes:
+      1:
+        type_id: 1
+        args:
+          attribute: 'state.pristine_request.path'
+          values:
+            - '/foo/bar'
+            - '/foo'
+        outlets:
+          true: 2
+          false: 4
+      2:
+        type_id: 3
+        args:
+          attribute: "state.response.body"
+          value: "found!"
+        outlets:
+          true: 3
+      3:
+        type_id: 3
+        args:
+          attribute: "state.response.code"
+          value: 200
+      4:
+        type_id: 3
+        args:
+          attribute: "state.request.headers.Host"
+          value: "foo.com"
