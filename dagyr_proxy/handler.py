@@ -23,10 +23,7 @@ class DagHandler(tornado.web.RequestHandler):
         req_state = state.RequestState(self.request)
 
         # get an executor
-        dag_executor = dagyr.dag.DagExecutor(
-            self.application.dag_config,
-            req_state,
-        )
+        dag_executor = self.application.dag_config.get_executor(req_state)
         # execute it!
         dag_executor.call_hook('ingress')
 
