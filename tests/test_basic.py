@@ -20,7 +20,7 @@ class TestBasic(tornado.testing.AsyncHTTPTestCase):
         # TODO: config? autoreload is only nice for development and debugging
         config_file = 'config.yaml'
         # load initial config file
-        app.dag_config = dagyr.dag.DagConfig.from_file(config_file)
+        app.dag_config = dagyr.dag.Dagyr.from_file(config_file)
         return app
 
     def test_not_matching_domain(self):

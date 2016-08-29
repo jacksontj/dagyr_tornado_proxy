@@ -21,7 +21,7 @@ def _reload_config_on_update(app, filepath, modify_times):
 
     if filepath not in modify_times or modified != modify_times[filepath]:
         log.debug("config change, reloading config")
-        app.dag_config = dagyr.dag.DagConfig.from_file(config_file)
+        app.dag_config = dagyr.dag.Dagyr.from_file(config_file)
         modify_times[filepath] = modified
         log.info("Successfully loaded new config from {0}".format(filepath))
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     scheduler.start()
 
     # load initial config file
-    app.dag_config = dagyr.dag.DagConfig.from_file(config_file)
+    app.dag_config = dagyr.dag.Dagyr.from_file(config_file)
 
 
     app.listen(8888)

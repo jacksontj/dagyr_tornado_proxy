@@ -20,68 +20,17 @@ global_option_data:
 # what types of processing_nodes -- effectively a template
 processing_node_types:
   1:
-    name: 'attribute_match'
-    info: 'match an attribute against a set of values'
-    info_url: http://someplace.com
-    # this node_type has the effect of setting a "domain DAG name"
-    func: attribute_match
-    # this is what the args are, and potentially how to resolve them (look it up)
-    arg_spec:
-      # this is a thing that will be passed a key to lookup the value
-      attribute:
-        name: 'a readable name'
-        info: 'name of the attribute to match'
-        type: string
-      # this just gets a value-- just use it
-      values:
-        name: 'a readable name'
-        info: 'list of values to match against'
-        type: list  # TODO: define type of values?
+    processing_function_type: attribute_match
   2:
-    name: 'execute_dynamic_dag'
-    info: 'execute another dag'
-    func: execute_dynamic_dag
-    arg_spec:
-      # this is a thing that will be passed a key to lookup the value
-      dag_prefix:
-        name: 'a readable name'
-        info: 'string prefix'
-        type: string
-      # this just gets a value-- just use it
-      suffix_key:
-        name: 'a readable name'
-        info: 'list of values to match against'
-        type: string
+    processing_function_type: execute_dynamic_dag
   3:
-    name: 'set_attribute'
-    info: 'set an attribute'
-    func: set_attribute
-    arg_spec:
-      # this is a thing that will be passed a key to lookup the value
-      attribute:
-        name: 'a readable name'
-        info: 'name of the attribute to match'
-        type: string
-      # this just gets a value-- just use it
-      value:
-        name: 'what to set it to'
-        info: 'what value to set'
-        # TODO: any??
-        #type: string
+    processing_function_type: set_attribute
   4:
     name: 'set_status_code'
     info: 'set status code'
-    func: set_attribute
+    processing_function_type: set_attribute
     arg_spec:
-      # this is a thing that will be passed a key to lookup the value
-      attribute:
-        name: 'a readable name'
-        info: 'name of the attribute to match'
-        type: string
-      # this just gets a value-- just use it
       value:
-        name: 'what to set it to'
-        info: 'what value to set'
         type: int
         # key for all possible options, NOT a place to get the values from
         # for the node instance-- they live in the node instance as "args".
