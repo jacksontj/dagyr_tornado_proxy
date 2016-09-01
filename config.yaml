@@ -21,10 +21,34 @@ global_option_data:
 processing_node_types:
   1:
     processing_function_type: attribute_match
+    inlets:
+      0:
+        name: '0th inlet'
+    outlets:
+      0:
+        name: '0th outlet true'
+        returns: [true]
+      1:
+        name: '1st outlet false'
+        returns: [false]
   2:
     processing_function_type: execute_dynamic_dag
+    inlets:
+      0:
+        name: '0th inlet'
+    outlets:
+      0:
+        name: '0th outlet true'
+        returns: [true]
   3:
     processing_function_type: set_attribute
+    inlets:
+      0:
+        name: '0th inlet'
+    outlets:
+      0:
+        name: '0th outlet true'
+        returns: [true]
   4:
     name: 'set_status_code'
     info: 'set status code'
@@ -36,12 +60,19 @@ processing_node_types:
         # for the node instance-- they live in the node instance as "args".
         # this means that the value you are passed will be a key to lookup in options
         global_option_data_key: response_codes
+    inlets:
+      0:
+        name: '0th inlet'
+    outlets:
+      0:
+        name: '0th outlet true'
+        returns: [true]
 
 # TODO: add options for max_depth, etc. for DAG validation and execution
 # all the DAGs
 dags:
   ingress:
-    starting_node: 1
+    starting_node: [1, 0]
     # THIS is not layered
     processing_nodes:
       1: # node instance
@@ -54,8 +85,8 @@ dags:
             - b.com
             - localhost:8888
         outlets:
-          true: 2
-          false: 3
+          0: [2, 0]
+          1: [3, 0]
       2: # node instance
         type_id: 2
         args:
@@ -67,14 +98,14 @@ dags:
           attribute: state.response.body
           value: "not found!"
         outlets:
-          true: 4
+          0: [4, 0]
       4:
         type_id: 4
         args:
           attribute: state.response.code
           value: notfound
   egress:
-    starting_node: 1
+    starting_node: [1, 0]
     processing_nodes:
       1: # node instance
         type_id: 3
@@ -84,7 +115,7 @@ dags:
 
   # per domain
   dynamic_domain_localhost:8888:
-    starting_node: 1
+    starting_node: [1, 0]
     processing_nodes:
       1:
         type_id: 1
@@ -94,15 +125,15 @@ dags:
             - '/foo/bar'
             - '/foo'
         outlets:
-          true: 2
-          false: 4
+          0: [2, 0]
+          1: [4, 0]
       2:
         type_id: 3
         args:
           attribute: "state.response.body"
           value: "found!"
         outlets:
-          true: 3
+          0: [3, 0]
       3:
         type_id: 3
         args:
